@@ -1,5 +1,6 @@
 import 'package:calculadora_resistencias/pages/cinco_bandas_page.dart';
 import 'package:calculadora_resistencias/pages/cuatro_bandas_page.dart';
+import 'package:calculadora_resistencias/pages/seis_bandas_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -24,11 +25,14 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // const Image(
-                //   image: AssetImage('assets/images/notas.png'),
-                //   width: 150,
-                //   height: 150,
-                // ),
+                const Image(
+                  image: AssetImage('assets/images/resistor.png'),
+                  width: 150,
+                  height: 150,
+                ),
+                const SizedBox(
+                  height: 30.0,
+                ),
                 const Text(
                   "Cuantas bandas tiene tu resistencia?",
                   style: TextStyle(fontSize: 20, fontStyle: FontStyle.italic),
@@ -60,6 +64,20 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                   child: const Text("cinco bandas"),
+                ),
+                const SizedBox(
+                  height: 16.0,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SeisBandasPage(),
+                      ),
+                    );
+                  },
+                  child: const Text("seis bandas"),
                 ),
               ],
             ),
