@@ -1,3 +1,6 @@
+import 'package:calculadora_resistencias/pages/colores.dart';
+import 'package:calculadora_resistencias/pages/colores_temperatura.dart';
+import 'package:calculadora_resistencias/pages/colores_tolerancias.dart';
 import 'package:calculadora_resistencias/pages/home_page.dart';
 import 'package:flutter/material.dart';
 
@@ -6,50 +9,6 @@ class SeisBandasPage extends StatefulWidget {
 
   @override
   State<SeisBandasPage> createState() => _SeisBandasPageState();
-}
-
-enum Colores {
-  cafe(1, Colors.brown),
-  rojo(2, Colors.red),
-  naranja(3, Colors.orange),
-  amarillo(4, Colors.yellow),
-  verde(5, Colors.green),
-  azul(6, Colors.blue),
-  violeta(7, Colors.purple),
-  gris(8, Colors.grey),
-  blanco(9, Colors.white),
-  negro(0, Colors.black);
-
-  final int value;
-  final Color color;
-
-  const Colores(this.value, this.color);
-}
-
-enum ColoresTolerancias {
-  cafe(1, Colors.brown),
-  rojo(2, Colors.red),
-  dorado(5, Colors.yellow),
-  plateado(10, Colors.grey);
-
-  final int value;
-  final Color color;
-
-  const ColoresTolerancias(this.value, this.color);
-}
-
-enum ColoresTemperatura {
-  cafe(100, Colors.brown),
-  rojo(50, Colors.red),
-  naranja(15, Colors.orange),
-  amarillo(25, Colors.yellow),
-  azul(10, Colors.blue),
-  violeta(5, Colors.purple);
-
-  final int value;
-  final Color color;
-
-  const ColoresTemperatura(this.value, this.color);
 }
 
 class _SeisBandasPageState extends State<SeisBandasPage> {
