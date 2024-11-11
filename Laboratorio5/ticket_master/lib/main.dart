@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ticket_master/pages/home_page.dart';
+import 'package:ticket_master/pages/Navigation_bar_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 82, 156, 241)),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const NavigationBarPage(),
     );
   }
 }
