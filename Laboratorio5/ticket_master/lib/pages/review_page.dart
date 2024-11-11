@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:ticket_master/models/Event.dart';
+import 'package:ticket_master/respository/hive_api.dart';
 import 'package:ticket_master/respository/ticket_master_api.dart';
 
 class ReviewPage extends StatefulWidget {
@@ -12,13 +14,15 @@ class ReviewPage extends StatefulWidget {
 
 class _ReviewPageState extends State<ReviewPage> {
   final TicketMasterApi _eventsInformation = TicketMasterApi();
-  Map<String, dynamic>? eventDetails;
+  final HiveApi hiveService = HiveApi();
+  Event? eventDetails;
   bool _isLoading = true;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    hiveService.initializeHive();
     fetchEventDetails();
   }
 
@@ -28,21 +32,15 @@ class _ReviewPageState extends State<ReviewPage> {
       if (data['_embedded']?['events'] != null) {
         final event = data['_embedded']['events'][0];
         setState(() {
-          eventDetails = {
-            'name': event['name'] ?? 'Evento sin título',
-            'images': event['images'] ?? [],
-            'date':
-                event['dates']?['start']?['localDate'] ?? 'Fecha no disponible',
-            'time':
-                event['dates']?['start']?['localTime'] ?? 'Hora no disponible',
-            'description': event['info'] ?? 'Sin descripción',
-            'priceRange': event['priceRanges'] != null
-                ? {
-                    'min': event['priceRanges'][0]['min'] ?? 'N/A',
-                    'max': event['priceRanges'][0]['max'] ?? 'N/A'
-                  }
-                : {'min': 'N/A', 'max': 'N/A'},
-          };
+          eventDetails = Event(
+            id: widget.eventId,
+            name: event['name'] ?? 'Evento sin título',
+            imageUrl: getImageUrl(event['images'] ?? []),
+            date: event['dates']?['start']?['localDate'] ?? 'Fecha no disponible',
+            description: event['info'] ?? 'Sin descripción',
+            minPrice: event['priceRanges'] != null ? event['priceRanges'][0]['min'] : 'N/A',
+            maxPrice: event['priceRanges'] != null ? event['priceRanges'][0]['max'] : 'N/A',
+          );
           _isLoading = false;
         });
       }
@@ -60,12 +58,18 @@ class _ReviewPageState extends State<ReviewPage> {
     return image != null ? image['url'] : '';
   }
 
-  void addFavorites(Map<String, dynamic>? event) {}
+  void addFavorites(Event event) async {
+    await hiveService.insertEvent(event);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Evento agregado a favoritos")),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(eventDetails?['name'] ?? 'Detalles del Evento'),
+        title: Text(eventDetails?.name ?? 'Detalles del Evento'),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -77,16 +81,16 @@ class _ReviewPageState extends State<ReviewPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (eventDetails!['images'] != null)
+                        if (eventDetails?.imageUrl != null)
                           Image.network(
-                            getImageUrl(eventDetails!['images']),
+                            eventDetails!.imageUrl,
                             height: 200,
                             width: double.infinity,
                             fit: BoxFit.cover,
                           ),
                         const SizedBox(height: 16),
                         Text(
-                          eventDetails!['name'],
+                          eventDetails!.name,
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -94,28 +98,25 @@ class _ReviewPageState extends State<ReviewPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "Fecha: ${eventDetails!['date']}",
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Hora: ${eventDetails!['time']}",
+                          "Fecha: ${eventDetails!.date}",
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          "Descripción: ${eventDetails!['description']}",
+                          "Descripción: ${eventDetails!.description}",
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          "Precio: \$${eventDetails!['priceRange']['min']} - \$${eventDetails!['priceRange']['max']}",
+                          "Precio: \$${eventDetails!.minPrice} - \$${eventDetails!.maxPrice}",
                           style: const TextStyle(fontSize: 16),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
-                            addFavorites(eventDetails);
+                            if (eventDetails != null) {
+                              addFavorites(eventDetails!);
+                            }
                           },
                           child: const Text("Agregar a favoritos"),
                         ),

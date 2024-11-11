@@ -31,7 +31,7 @@ class _NavigationBarPageState extends State<NavigationBarPage> {
           "Eventos Ticket Master",
           style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: const Color.fromARGB(206, 164, 17, 209),
+        backgroundColor: const Color.fromARGB(251, 7, 7, 7),
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
