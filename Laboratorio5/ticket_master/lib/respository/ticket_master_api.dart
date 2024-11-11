@@ -33,4 +33,8 @@ class TicketMasterApi {
       throw Exception('Failed to load events');
     }
   }
+  Future<Map<String, dynamic>> getEventById(String id) async {
+    final url = Uri.parse('$baseUrl?apikey=$apiKey&id=$id');
+    return await _fetchData(url);
+  }
 }
