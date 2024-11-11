@@ -1,116 +1,128 @@
 import 'package:flutter/material.dart';
+import 'package:ticket_master/respository/ticket_master_api.dart';
 
 class ReviewPage extends StatefulWidget {
-  final String title;
-  final String imageUrl;
-  final String date;
-  final String time;
-  final String description;
-  final String additionalNote;
-  final double minPrice;
-  final double maxPrice;
+  final String eventId;
 
-  const ReviewPage({
-    Key? key,
-    required this.title,
-    required this.imageUrl,
-    required this.date,
-    required this.time,
-    required this.description,
-    required this.additionalNote,
-    required this.minPrice,
-    required this.maxPrice,
-  }) : super(key: key);
+  const ReviewPage({Key? key, required this.eventId}) : super(key: key);
 
   @override
   State<ReviewPage> createState() => _ReviewPageState();
 }
 
 class _ReviewPageState extends State<ReviewPage> {
+  final TicketMasterApi _eventsInformation = TicketMasterApi();
+  Map<String, dynamic>? eventDetails;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEventDetails();
+  }
+
+  Future<void> fetchEventDetails() async {
+    try {
+      final data = await _eventsInformation.getEventById(widget.eventId);
+      if (data['_embedded']?['events'] != null) {
+        final event = data['_embedded']['events'][0];
+        setState(() {
+          eventDetails = {
+            'name': event['name'] ?? 'Evento sin título',
+            'images': event['images'] ?? [],
+            'date':
+                event['dates']?['start']?['localDate'] ?? 'Fecha no disponible',
+            'time':
+                event['dates']?['start']?['localTime'] ?? 'Hora no disponible',
+            'description': event['info'] ?? 'Sin descripción',
+            'priceRange': event['priceRanges'] != null
+                ? {
+                    'min': event['priceRanges'][0]['min'] ?? 'N/A',
+                    'max': event['priceRanges'][0]['max'] ?? 'N/A'
+                  }
+                : {'min': 'N/A', 'max': 'N/A'},
+          };
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Error al cargar detalles del evento: $e';
+      });
+    }
+  }
+
+  String getImageUrl(List<dynamic> images) {
+    final image = images.firstWhere((img) => img['width'] == 305,
+        orElse: () => images.isNotEmpty ? images[0] : null);
+    return image != null ? image['url'] : '';
+  }
+
+  void addFavorites(Map<String, dynamic>? event) {}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(eventDetails?['name'] ?? 'Detalles del Evento'),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Imagen del evento
-              if (widget.imageUrl.isNotEmpty)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    widget.imageUrl,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              const SizedBox(height: 16),
-              // Título del evento
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              // Fecha y hora del evento
-              Row(
-                children: [
-                  Icon(Icons.calendar_today, color: Colors.grey[600]),
-                  const SizedBox(width: 8),
-                  Text(
-                    "${widget.date} - ${widget.time}",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(child: Text(_errorMessage!))
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (eventDetails!['images'] != null)
+                          Image.network(
+                            getImageUrl(eventDetails!['images']),
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        const SizedBox(height: 16),
+                        Text(
+                          eventDetails!['name'],
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Fecha: ${eventDetails!['date']}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Hora: ${eventDetails!['time']}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "Descripción: ${eventDetails!['description']}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "Precio: \$${eventDetails!['priceRange']['min']} - \$${eventDetails!['priceRange']['max']}",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            addFavorites(eventDetails);
+                          },
+                          child: const Text("Agregar a favoritos"),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Descripción del evento
-              const Text(
-                "Descripción",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.description,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              // Nota adicional
-              const Text(
-                "Nota adicional",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                widget.additionalNote,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              // Rango de precios
-              const Text(
-                "Rango de precios",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "\$${widget.minPrice.toStringAsFixed(2)} - \$${widget.maxPrice.toStringAsFixed(2)}",
-                style: const TextStyle(fontSize: 16, color: Colors.green),
-              ),
-            ],
-          ),
-        ),
-      ),
+                ),
     );
   }
 }
