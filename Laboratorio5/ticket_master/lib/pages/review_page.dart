@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ticket_master/models/Event.dart';
+import 'package:ticket_master/pages/Navigation_bar_page.dart';
 import 'package:ticket_master/respository/hive_api.dart';
 import 'package:ticket_master/respository/ticket_master_api.dart';
 
@@ -63,8 +64,8 @@ class _ReviewPageState extends State<ReviewPage> {
   }
 
   void addFavorites(Event event) async {
-    var isEventPresent = await hiveService.getEvent(event.id)!.isInBox;
-    if (isEventPresent) {
+    var isEventPresent = await hiveService.getEvent(event.id);
+    if (isEventPresent?.id != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text("Evento ya se encuentra agregado a favoritos")),
@@ -75,6 +76,12 @@ class _ReviewPageState extends State<ReviewPage> {
         const SnackBar(content: Text("Evento agregado a favoritos")),
       );
     }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const NavigationBarPage(),
+      ),
+    );
   }
 
   @override
