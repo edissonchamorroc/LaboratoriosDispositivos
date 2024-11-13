@@ -3,7 +3,7 @@ import 'package:ticket_master/models/Event.dart';
 import 'package:ticket_master/respository/hive_api.dart';
 
 class FavoritesPage extends StatefulWidget {
-  const FavoritesPage({Key? key}) : super(key: key);
+  const FavoritesPage({super.key});
 
   @override
   State<FavoritesPage> createState() => _FavoritesPageState();
@@ -20,7 +20,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 
   Future<void> _loadFavorites() async {
-    final events = await _hiveService.getAllEvents();
+    final events = _hiveService.getAllEvents();
     setState(() {
       favoriteEvents = events;
     });

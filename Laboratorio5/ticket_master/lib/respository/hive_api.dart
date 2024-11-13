@@ -3,11 +3,11 @@ import 'package:ticket_master/models/Event.dart';
 
 
 class HiveApi {
-  late Box<Event> _eventBox;
-
-  Future<void> initializeHive() async {
+  static late Box<Event> _eventBox;
+  
+  static Future<void> initializeHive() async {
     Hive.registerAdapter(EventAdapter());
-    _eventBox = await Hive.openBox<Event>('eventsBox');
+     _eventBox = await Hive.openBox<Event>('eventsBox');
   }
 
   Future<void> insertEvent(Event event) async {

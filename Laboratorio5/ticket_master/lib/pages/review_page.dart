@@ -6,7 +6,7 @@ import 'package:ticket_master/respository/ticket_master_api.dart';
 class ReviewPage extends StatefulWidget {
   final String eventId;
 
-  const ReviewPage({Key? key, required this.eventId}) : super(key: key);
+  const ReviewPage({super.key, required this.eventId});
 
   @override
   State<ReviewPage> createState() => _ReviewPageState();
@@ -22,7 +22,6 @@ class _ReviewPageState extends State<ReviewPage> {
   @override
   void initState() {
     super.initState();
-    hiveService.initializeHive();
     fetchEventDetails();
   }
 
@@ -36,10 +35,15 @@ class _ReviewPageState extends State<ReviewPage> {
             id: widget.eventId,
             name: event['name'] ?? 'Evento sin título',
             imageUrl: getImageUrl(event['images'] ?? []),
-            date: event['dates']?['start']?['localDate'] ?? 'Fecha no disponible',
+            date:
+                event['dates']?['start']?['localDate'] ?? 'Fecha no disponible',
             description: event['info'] ?? 'Sin descripción',
-            minPrice: event['priceRanges'] != null ? event['priceRanges'][0]['min'] : 'N/A',
-            maxPrice: event['priceRanges'] != null ? event['priceRanges'][0]['max'] : 'N/A',
+            minPrice: event['priceRanges'] != null
+                ? event['priceRanges'][0]['min']
+                : 'N/A',
+            maxPrice: event['priceRanges'] != null
+                ? event['priceRanges'][0]['max']
+                : 'N/A',
           );
           _isLoading = false;
         });
@@ -59,10 +63,18 @@ class _ReviewPageState extends State<ReviewPage> {
   }
 
   void addFavorites(Event event) async {
-    await hiveService.insertEvent(event);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Evento agregado a favoritos")),
-    );
+    var isEventPresent = await hiveService.getEvent(event.id)!.isInBox;
+    if (isEventPresent) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Evento ya se encuentra agregado a favoritos")),
+      );
+    } else {
+      await hiveService.insertEvent(event);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Evento agregado a favoritos")),
+      );
+    }
   }
 
   @override
